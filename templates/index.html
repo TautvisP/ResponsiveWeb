@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cake with Candles</title>
+    <link rel="stylesheet" href="/static/css/cake.css">
+</head>
+<body>
+    <div class="cake">
+        <div class="plate"></div>
+        <div class="layer layer-bottom"></div>
+        <div class="layer layer-middle"></div>
+        <div class="layer layer-top"></div>
+        <div class="icing"></div>
+        <div class="drip drip1"></div>
+        <div class="drip drip2"></div>
+        <div class="drip drip3"></div>
+    </div>
+    <button onclick="addCandle()">Add Candle</button>
+    <script>
+        let candleCount = 0;
+
+        function addCandle() {
+            const cake = document.querySelector('.cake');
+            const candle = document.createElement('div');
+            candle.className = 'candle';
+            candle.style.left = `${candleCount * 20 + 30}px`;
+            const flame = document.createElement('div');
+            flame.className = 'flame';
+            candle.appendChild(flame);
+            cake.appendChild(candle);
+            candleCount++;
+        }
+
+        function blowOutCandles() {
+            const candles = document.querySelectorAll('.candle');
+            candles.forEach(candle => candle.remove());
+            candleCount = 0;
+        }
+
+        // Microphone input handling
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const microphone = audioContext.createMediaStreamSource(stream);
+                const analyser = audioContext.createAnalyser();
+                microphone.connect(analyser);
+                analyser.fftSize = 256;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                function detectBlow() {
+                    analyser.getByteFrequencyData(dataArray);
+                    const maxVolume = Math.max(...dataArray);
+                    if (maxVolume > 250) { // Adjust threshold as needed
+                        blowOutCandles();
+                    }
+                    requestAnimationFrame(detectBlow);
+                }
+
+                detectBlow();
+            })
+            .catch(err => console.error('Error accessing microphone:', err));
+    </script>
+</body>
+</html>
