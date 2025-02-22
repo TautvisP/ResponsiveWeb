@@ -1,0 +1,9 @@
+.heart {
+    font-size: 100px;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+  
+  .heart.clicked {
+    transform: scale(1.2);
+  }
